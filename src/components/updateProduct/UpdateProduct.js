@@ -22,8 +22,8 @@ function UpdateProduct({ open, onClose, producto, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+    <div className="fixed inset-0 z-50 bg-opacity-10 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-96 border border-gray-200">
         <h2 className="text-xl font-bold mb-4">Actualizar producto</h2>
 
         <div className="mb-2">

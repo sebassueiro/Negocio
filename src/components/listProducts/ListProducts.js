@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import UpdateProduct from "../updateProduct/UpdateProduct";
 
-function ListProducts({ productos, buscarProducto, verTodos, handleUpdate }) {
+function ListProducts({ productos, buscarProducto, verTodos, handleUpdate,abrirModal }) {
   const [open, setOpen] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [codigo, setCodigo] = useState("");
@@ -22,43 +22,44 @@ function ListProducts({ productos, buscarProducto, verTodos, handleUpdate }) {
     setCodigo("");
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
-      <div className="w-full max-w-5xl">
-        {/* Barra de búsqueda y acciones */}
-        <div className="flex mb-4 gap-2">
-          <input
-            type="text"
-            placeholder="Código de barra"
-            className="flex-1 p-2 border rounded-l-md focus:outline-none"
-            value={codigo}
-            onChange={(e) => setCodigo(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
-          />
-          <button
-            onClick={handleBuscar}
-            className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
-          >
-            Buscar
-          </button>
-          <button
-            onClick={verTodos}
-            className="bg-gray-300 text-gray-800 px-4 rounded hover:bg-gray-400"
-          >
-            Ver todos
-          </button>
-          <button
-            className="bg-green-600 text-white px-4 rounded hover:bg-green-700"
-            // onClick={...} // Aquí puedes abrir un modal para agregar producto nuevo
-          >
-            Agregar nuevo producto
-          </button>
-        </div>
+return (
+  <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
+    <div className="w-full max-w-5xl">
+      {/* Barra de búsqueda y acciones */}
+      <div className="flex mb-4 gap-2">
+        <input
+          type="text"
+          placeholder="Código de barra"
+          className="flex-1 p-2 border rounded-l-md focus:outline-none"
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
+        />
+        <button
+          onClick={handleBuscar}
+          className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+        >
+          Buscar
+        </button>
+        <button
+          onClick={verTodos}
+          className="bg-gray-300 text-gray-800 px-4 rounded hover:bg-gray-400"
+        >
+          Ver todos
+        </button>
+        <button
+          className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+          onClick={abrirModal}
+        >
+          Crear producto
+        </button>
+      </div>
 
-        {/* Tabla de productos */}
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+      {/* Tabla de productos con encabezado fijo y scroll */}
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div className="max-h-[750px] overflow-y-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-100 text-gray-700">
+            <thead className="bg-gray-100 text-gray-700 sticky top-0 z-10">
               <tr>
                 <th className="p-3 font-semibold">Código de Barra</th>
                 <th className="p-3 font-semibold">Nombre</th>
@@ -100,15 +101,18 @@ function ListProducts({ productos, buscarProducto, verTodos, handleUpdate }) {
           </table>
         </div>
       </div>
-      {/* Modal para editar producto */}
-      <UpdateProduct
-        open={open}
-        onClose={() => setOpen(false)}
-        producto={productoSeleccionado}
-        onSave={handleSave}
-      />
     </div>
-  );
+
+    {/* Modal para editar producto */}
+    <UpdateProduct
+      open={open}
+      onClose={() => setOpen(false)}
+      producto={productoSeleccionado}
+      onSave={handleSave}
+    />
+  </div>
+);
+
 }
 
 export default ListProducts;

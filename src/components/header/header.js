@@ -28,7 +28,8 @@ export default function Header({ title = "Lo de Osvaldo" }) {
       {/* OVERLAY (fondo oscuro) */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-40 z-40"
+        
+          className="fixed inset-0 bg-opacity-10 backdrop-blur-sm z-40"
           onClick={() => setIsOpen(false)}
         />
       )}

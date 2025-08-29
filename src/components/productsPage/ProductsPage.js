@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import ListProducts from "./../listProducts/ListProducts";
-import { obtenerProductos, obtenerProductoPorCodigo, actualizarPrecioVenta } from "./../../consultas/consultas";
+import CreateProduct from "./../createProduct/CreateProduct";  
+import { obtenerProductos, obtenerProductoPorCodigo, actualizarPrecioVenta, crearProducto } from "./../../consultas/consultas";
 
 function ProductsPage() {
   const [productos, setProductos] = useState([]);
-  const [todos, setTodos] = useState([]); // Para ver todos después de filtrar
+  const [todos, setTodos] = useState([]);
+  const [openCreate, setOpenCreate] = useState(false);
 
   useEffect(() => {
     recargarProductos();
@@ -41,14 +43,27 @@ function ProductsPage() {
     recargarProductos();
   };
 
+  const handleCreate = async (nuevoProducto) => {
+    await crearProducto(nuevoProducto);
+    recargarProductos();
+  };
+
   return (
+    <>
     <ListProducts
       productos={productos}
       buscarProducto={buscarProducto}
       verTodos={verTodos}
       recargarProductos={recargarProductos}
       handleUpdate={handleUpdate}
+      abrirModal={() => setOpenCreate(true)}
     />
+    <CreateProduct
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onSave={handleCreate}
+      />
+    </>  
   );
 }
 
