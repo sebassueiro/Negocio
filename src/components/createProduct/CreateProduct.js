@@ -53,6 +53,7 @@ function CreateProduct({ open, onClose, onSave }) {
           placeholder="Código de barra"
           value={codigoBarra}
           onChange={(e) => setCodigoBarra(e.target.value)}
+          autoFocus
         />
 
         <input

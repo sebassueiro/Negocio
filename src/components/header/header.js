@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { Link } from "react-router-dom";
+import Logo from '../../logo/Logo Negocio.jpeg';
 
 export default function Header({ title = "Lo de Osvaldo" }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,7 +13,7 @@ export default function Header({ title = "Lo de Osvaldo" }) {
       <header className="flex justify-between items-center p-4 bg-white shadow-md">
         {/* Logo + Nombre */}
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-gray-300 rounded-full" />
+          <img src={Logo} alt="Logo" className="w-16 h-16 rounded-full object-cover"/>
           <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
         </div>
 
@@ -65,6 +66,27 @@ export default function Header({ title = "Lo de Osvaldo" }) {
             className="text-gray-700 hover:text-blue-600 font-medium"
           >
             Productos
+          </Link>
+          <Link
+            to="/ArqueoCaja"
+            onClick={() => setIsOpen(false)}
+            className="text-gray-700 hover:text-blue-600 font-medium"
+          >
+            Arqueo de Caja
+          </Link>
+          <Link
+            to="/ResumenMensual"
+            onClick={() => setIsOpen(false)}
+            className="text-gray-700 hover:text-blue-600 font-medium"
+          >
+            Resumen Mensual
+          </Link>
+          <Link
+            to="/ResumenCigarrillos"
+            onClick={() => setIsOpen(false)}
+            className="text-gray-700 hover:text-blue-600 font-medium"
+          >
+            Resumen Cigarrillos
           </Link>
         </nav>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { obtenerProductoPorCodigo } from '../../consultas/consultas';
+import { obtenerProductoPorCodigo, crearVenta } from '../../consultas/consultas';
 import ModalPrecioVariable from './../modalPrecioVariable/ModalPrecioVariable';
 
 
@@ -11,6 +11,14 @@ function MainPage() {
   const [showModal, setShowModal] = useState(false);
   const [productoActual, setProductoActual] = useState(null);
   const [precioManual, setPrecioManual] = useState('');
+
+  const formatoARS = (valor) => {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      minimumFractionDigits: 2
+    }).format(valor);
+  };
 
   const agregarProducto = async () => {
     if (!codigo) return;
@@ -65,23 +73,41 @@ function MainPage() {
     setShowModal(false);
   };
 
-  const aumentarCantidad = (idx) => {
-    const nuevos = [...productos];
-    nuevos[idx].cantidad += 1;
-    setProductos(nuevos);
-  };
-
-  const disminuirCantidad = (idx) => {
-    const nuevos = [...productos];
-    if (nuevos[idx].cantidad > 1) {
-      nuevos[idx].cantidad -= 1;
-    }
-    setProductos(nuevos);
-  };
-
   const eliminarProducto = (idx) => {
     const nuevos = productos.filter((_, i) => i !== idx);
     setProductos(nuevos);
+  };
+
+  const finalizarVenta = async () => {
+    try {
+      if (productos.length === 0) {
+        alert("Debe agregar al menos un producto antes de finalizar la venta ⚠️");
+        return;
+      }
+      const ventaDTO = {
+        idEmpleado: null,
+        idCliente: null, // o el que selecciones
+        esFiado: esFiado,
+        total: productos.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0),
+        detalle: productos.map((p) => ({
+          codigoBarra: p.codigoBarra ?? p.codigo,
+          cantidad: p.cantidad,
+          precioUnitario: p.precioVenta
+        }))
+      };
+
+      const data = await crearVenta(ventaDTO);
+      console.log("Venta registrada:", data);
+
+      setProductos([]);
+      setCodigo("");
+      setEsFiado(false);
+      setImprimirTicket(false);
+      alert("Venta registrada con éxito ✅");
+    } catch (err) {
+      console.error(err);
+      alert("Hubo un error al registrar la venta ❌");
+    }
   };
 
 
@@ -100,6 +126,7 @@ function MainPage() {
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && agregarProducto()}
+              autoFocus
             />
             <button
               onClick={agregarProducto}
@@ -128,9 +155,7 @@ function MainPage() {
                   >
                     <td className="p-3">{prod.codigoBarra ?? prod.codigo}</td>
                     <td className="p-3">{prod.nombre}</td>
-                    <td className="p-3 text-right">
-                      ${prod.precioVenta}
-                    </td>
+                    <td className="p-3 text-right">{formatoARS(prod.precioVenta)}</td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
@@ -159,7 +184,7 @@ function MainPage() {
                       </div>
                     </td>
                     <td className="p-3 text-right">
-                      ${prod.precioVenta * prod.cantidad}
+                      {formatoARS(prod.precioVenta * prod.cantidad)}
                     </td>
                     <td className="p-3 text-right">
                       <button
@@ -184,34 +209,44 @@ function MainPage() {
         </div>
 
         {/* Derecha: total, checkpoints y botón */}
-        <div className="w-80 bg-white p-4 shadow-md flex flex-col justify-between h-[500px]">
-          <div>
-            <h2 className="text-xl font-bold mb-4">Total: ${total}</h2>
-            <div className="flex flex-col gap-2 mb-4">
-              <label className="flex items-center space-x-1 text-sm">
+        <div className="w-80 bg-white p-4 shadow-md flex flex-col justify-between h-[750px] w-[500px]">
+          <div className="flex flex-col items-center">
+            <h2 className="text-6xl mb-6 text-black-700">
+              Total: {formatoARS(total)}
+            </h2>
+          </div>
+
+          <div className="mt-auto">
+            <div className="flex flex-col gap-3 mb-6">
+              <label className="flex items-center space-x-2 text-base">
                 <input
                   type="checkbox"
                   checked={esFiado}
                   onChange={() => setEsFiado(!esFiado)}
-                  className="accent-blue-600"
+                  className="accent-blue-600 w-5 h-5"
                 />
                 <span>¿Es fiado?</span>
               </label>
-              <label className="flex items-center space-x-1 text-sm">
+              <label className="flex items-center space-x-2 text-base">
                 <input
                   type="checkbox"
                   checked={imprimirTicket}
                   onChange={() => setImprimirTicket(!imprimirTicket)}
-                  className="accent-blue-600"
+                  className="accent-blue-600 w-5 h-5"
                 />
                 <span>Imprimir ticket</span>
               </label>
             </div>
+
+            <button
+              onClick={finalizarVenta}
+              className="bg-blue-600 text-white px-6 py-4 rounded-lg text-xl font-semibold hover:bg-blue-700 transition w-full"
+            >
+              Finalizar venta
+            </button>
           </div>
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition mt-4">
-            Finalizar venta
-          </button>
         </div>
+
       </main>
       {showModal && (
         <ModalPrecioVariable

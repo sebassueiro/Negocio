@@ -21,6 +21,13 @@ function ListProducts({ productos, buscarProducto, verTodos, handleUpdate,abrirM
     buscarProducto(codigo);
     setCodigo("");
   };
+    const formatoARS = (valor) => {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      minimumFractionDigits: 2
+    }).format(valor);
+  };
 
 return (
   <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
@@ -34,6 +41,7 @@ return (
           value={codigo}
           onChange={(e) => setCodigo(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
+          autoFocus
         />
         <button
           onClick={handleBuscar}
@@ -78,7 +86,7 @@ return (
                   <td className="p-3">{prod.codigoBarra ?? prod.codigo}</td>
                   <td className="p-3">{prod.nombre}</td>
                   <td className="p-3 text-right">
-                    ${prod.precioVenta ?? prod.precio}
+                    {formatoARS(prod.precioVenta ?? prod.precio)}
                   </td>
                   <td className="p-3 text-center">
                     <button
