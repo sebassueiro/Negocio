@@ -48,3 +48,42 @@ export const ResumenCigarrillo = async (fechaFormateada) => {
   return res.data;
 };
 //#endregion
+
+//#region Empleados
+export const obtenerEmpleados = async () => {
+  const res = await axios.get(`https://localhost:7014/api/Empleado/getAllEmpleado`);
+  return res.data;
+};
+
+export const crearEmpleado = async (empleado) => {
+  const res = await axios.post(`https://localhost:7014/api/Empleado/createEmpleado`, empleado);
+  return res.data;
+}
+
+export const obtenerEmpleadoPorCodigo = async (id) => {
+  const res = await axios.delete(`https://localhost:7014/api/Empleado/getEmpleado/${id}`);
+  return res.data;
+}
+//#endregion
+
+//#region Pagos Empleados
+export const crearPagoEmpleado = async (pagoEmpleadoDTO) => {
+  const res = await axios.post(`https://localhost:7014/api/PagosEmpleado/createPagoEmpleado`, pagoEmpleadoDTO);
+  return res.data;
+};
+
+export const obtenerPagosEmpleado = async () => {
+  const res = await axios.get(`https://localhost:7014/api/PagosEmpleado/getPagosEmpleados`);
+  return res.data;
+}
+
+export const obtenerPagoEmpleadoPorId = async (id) => {
+  const res = await axios.get(`https://localhost:7014/api/PagosEmpleado/getPagoEmpleado/${id}`);
+  return res.data;
+}
+
+export const obtenerPagoEmpleadoPorEmpleado = async (id) => {
+  const res = await axios.get(`https://localhost:7014/api/PagosEmpleado/empleado/${id}`);
+  return res.data;
+}
+//#endregion

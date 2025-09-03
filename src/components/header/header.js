@@ -88,6 +88,13 @@ export default function Header({ title = "Lo de Osvaldo" }) {
           >
             Resumen Cigarrillos
           </Link>
+          <Link
+            to="/Empleado"
+            onClick={() => setIsOpen(false)}
+            className="text-gray-700 hover:text-blue-600 font-medium"
+          >
+            Empleados
+          </Link>
         </nav>
       </div>
     </>

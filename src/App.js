@@ -5,6 +5,7 @@ import ArqueoCaja from './components/arqueoCaja/ArqueoCaja';
 import MainPage from './components/mainPage/MainPage';
 import ResumenMensual from './components/resumenMensualCard/ResumenMensualCard';
 import ResumenCigarrillos from './components/resumenCigarrilos/ResumenCigarrillos';
+import Empleado from './components/empleado/Empleado';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/ArqueoCaja" element={<ArqueoCaja/>} />
         <Route path="/ResumenMensual" element={<ResumenMensual/>} />
         <Route path="/ResumenCigarrillos" element={<ResumenCigarrillos />} />
+        <Route path="/Empleado" element={<Empleado />} />
       </Routes>
     </Router>
   );  

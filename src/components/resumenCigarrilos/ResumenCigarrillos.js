@@ -58,47 +58,56 @@ function ResumenCigarrillos() {
 
       {showModal && resumen && (
         <div className="fixed inset-0 z-50 bg-opacity-10 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl shadow-2xl w-[400px] text-center pointer-events-auto">
-            <h2 className="text-lg font-bold mb-4">
-              Detalle de Cigarrillos
-            </h2>
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden w-[500px] pointer-events-auto">
+            <div className="p-6 border-b text-center">
+              <h2 className="text-lg font-bold">Detalle de Cigarrillos</h2>
+            </div>
 
-<div className="overflow-x-auto mb-4">
-  <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden text-sm">
-    <thead className="bg-gray-200 text-gray-700">
-      <tr>
-        <th className="px-4 py-2 border">Producto</th>
-        <th className="px-4 py-2 border text-right">Cantidad</th>
-        <th className="px-4 py-2 border text-right">Subtotal</th>
-      </tr>
-    </thead>
-    <tbody>
-      {resumen.detalles.map((item, idx) => (
-        <tr
-          key={idx}
-          className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
-        >
-          <td className="px-4 py-2 border">{item.nombre}</td>
-          <td className="px-4 py-2 border text-right">{item.cantidad}</td>
-          <td className="px-4 py-2 border text-right">{formatoARS(item.total)}</td>
-        </tr>
-      ))}
-    </tbody>
-    <tfoot>
-      <tr className="bg-gray-200 font-semibold">
-        <td className="px-4 py-2 border text-right" colSpan={2}>
-          Total
-        </td>
-        <td className="px-4 py-2 border text-right">
-          {formatoARS(resumen.totalCigarrillos)}
-        </td>
-      </tr>
-    </tfoot>
-  </table>
-</div>
+            <div className="max-h-[400px] overflow-y-auto">
+              {resumen.detalles.length === 0 ? (
+                <p className="p-6 text-center text-gray-500">
+                  No se han vendido cigarrillos en el día de hoy.
+                </p>
+              ) : (
+                <table className="w-full text-left border-collapse text-sm">
+                  <thead className="bg-gray-100 text-gray-700 sticky top-0 z-10">
+                    <tr>
+                      <th className="p-3 font-semibold">Producto</th>
+                      <th className="p-3 font-semibold text-right">Cantidad</th>
+                      <th className="p-3 font-semibold text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {resumen.detalles.map((item, idx) => (
+                      <tr
+                        key={idx}
+                        className={`${
+                          idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        } hover:bg-green-50 transition`}
+                      >
+                        <td className="p-3">{item.nombre}</td>
+                        <td className="p-3 text-right">{item.cantidad}</td>
+                        <td className="p-3 text-right">
+                          {formatoARS(item.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-gray-100 font-semibold">
+                      <td className="p-3 text-right" colSpan={2}>
+                        Total
+                      </td>
+                      <td className="p-3 text-right">
+                        {formatoARS(resumen.totalCigarrillos)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
 
-
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 p-4 border-t">
               <button
                 onClick={() => setShowModal(false)}
                 className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
