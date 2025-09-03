@@ -57,7 +57,7 @@ function ResumenCigarrillos() {
       </button>
 
       {showModal && resumen && (
-        <div className="fixed inset-0 z-50 bg-opacity-10 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
           <div className="bg-white shadow-lg rounded-xl overflow-hidden w-[500px] pointer-events-auto">
             <div className="p-6 border-b text-center">
               <h2 className="text-lg font-bold">Detalle de Cigarrillos</h2>

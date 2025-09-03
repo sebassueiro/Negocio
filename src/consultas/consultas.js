@@ -87,3 +87,27 @@ export const obtenerPagoEmpleadoPorEmpleado = async (id) => {
   return res.data;
 }
 //#endregion
+
+//#region Proveedores
+export const obtenerProveedores = async () => {
+  const res = await axios.get('https://localhost:7014/api/Proveedor/getAll');
+  return res.data;
+};
+
+export const crearProveedor = async (proveedorDTO) => {
+  const res = await axios.post('https://localhost:7014/api/Proveedor/create', proveedorDTO);
+  return res.data;
+};
+//#endregion
+
+//#region Compras
+export const obtenerCompras = async () => {
+  const res = await axios.get('https://localhost:7014/api/Compra/getAll');
+  return res.data;
+};
+
+export const crearCompra = async (compraDTO) => {
+  const res = await axios.post('https://localhost:7014/api/Compra/create', compraDTO);
+  return res.data;
+};
+//#endregion

@@ -43,7 +43,7 @@ function CreateProduct({ open, onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-opacity-10 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-xl w-96 border border-gray-200">
         <h2 className="text-xl font-bold mb-4">Crear producto</h2>
 

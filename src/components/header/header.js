@@ -95,6 +95,13 @@ export default function Header({ title = "Lo de Osvaldo" }) {
           >
             Empleados
           </Link>
+          <Link
+            to="/Proveedores"
+            onClick={() => setIsOpen(false)}
+            className="text-gray-700 hover:text-blue-600 font-medium"
+          >
+            Proveedores
+          </Link>
         </nav>
       </div>
     </>

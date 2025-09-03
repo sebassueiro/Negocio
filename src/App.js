@@ -6,6 +6,7 @@ import MainPage from './components/mainPage/MainPage';
 import ResumenMensual from './components/resumenMensualCard/ResumenMensualCard';
 import ResumenCigarrillos from './components/resumenCigarrilos/ResumenCigarrillos';
 import Empleado from './components/empleado/Empleado';
+import Proveedores from './components/proveedor/Proveedor';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/ResumenMensual" element={<ResumenMensual/>} />
         <Route path="/ResumenCigarrillos" element={<ResumenCigarrillos />} />
         <Route path="/Empleado" element={<Empleado />} />
+        <Route path="/Proveedores" element={<Proveedores />} />
       </Routes>
     </Router>
   );  
