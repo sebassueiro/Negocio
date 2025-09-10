@@ -11,6 +11,19 @@ function UpdateProduct({ open, onClose, producto, onSave }) {
     }
   }, [producto]);
 
+  // Manejo del Enter
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, precio]);
+
   if (!open || !producto) return null;
 
   const handleSave = () => {
@@ -19,10 +32,19 @@ function UpdateProduct({ open, onClose, producto, onSave }) {
       return;
     }
     onSave(producto.codigoBarra ?? producto.codigo, Number(precio));
+    handleClose();
+  };
+
+  const handleClose = () => {
+    onClose();
+    setTimeout(() => {
+      const barcodeInput = document.getElementById("barcode-input");
+      if (barcodeInput) barcodeInput.focus();
+    }, 50);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-opacity-10 backdrop-blur-sm flex items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-xl w-96 border border-gray-200">
         <h2 className="text-xl font-bold mb-4">Actualizar producto</h2>
 
@@ -42,13 +64,14 @@ function UpdateProduct({ open, onClose, producto, onSave }) {
           placeholder="Nuevo precio"
           value={precio}
           onChange={(e) => setPrecio(e.target.value)}
+          autoFocus
         />
 
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
         <div className="flex justify-end gap-2">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
           >
             Cancelar

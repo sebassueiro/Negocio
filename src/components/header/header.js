@@ -3,6 +3,7 @@ import { useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { Link } from "react-router-dom";
 import Logo from '../../logo/Logo Negocio.jpeg';
+import { toast } from "react-toastify";
 
 export default function Header({ title = "Lo de Osvaldo" }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,6 +102,20 @@ export default function Header({ title = "Lo de Osvaldo" }) {
             className="text-gray-700 hover:text-blue-600 font-medium"
           >
             Proveedores
+          </Link>
+          <Link
+            to="/Clientes"
+            onClick={() => setIsOpen(false)}
+            className="text-gray-700 hover:text-blue-600 font-medium"
+          >
+            Clientes
+          </Link>
+          <Link
+            to="/Ticket"
+            onClick={() => setIsOpen(false)}
+            className="text-gray-700 hover:text-blue-600 font-medium"
+          >
+            Ticket
           </Link>
         </nav>
       </div>

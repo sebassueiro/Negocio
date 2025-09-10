@@ -4,3 +4,27 @@ html, body, #root {
   padding: 0;
   overflow: hidden; /* Evita el scroll */
 }
+/* App.css — paleta aesthetic en OKLCH */
+.bg-soft {
+  background-color: oklch(95% 0.02 270);
+}
+
+.text-main {
+  color: oklch(25% 0.03 270);
+}
+
+.bg-accent {
+  background-color: oklch(70% 0.15 330);
+}
+
+.bg-accent:hover {
+  background-color: oklch(65% 0.18 330);
+}
+
+.bg-card {
+  background-color: oklch(92% 0.01 270);
+}
+
+.border-soft {
+  border-color: oklch(80% 0.01 270);
+}

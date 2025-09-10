@@ -5,6 +5,7 @@ import {
   obtenerCompras,
   crearCompra,
 } from "../../consultas/consultas";
+import { toast } from "react-toastify";
 
 function Proveedor() {
   const [proveedores, setProveedores] = useState([]);
@@ -96,7 +97,7 @@ function Proveedor() {
       setCompra({ idProveedor: "", total: "" });
       setShowCompraModal(false);
       cargarCompras();
-      alert("Compra registrada con éxito ✅");
+      toast.success("Compra registrada con éxito ✅");
     } catch (error) {
       console.error("Error al registrar compra:", error);
     }
@@ -120,13 +121,13 @@ function Proveedor() {
       <div className="flex justify-center gap-4 mb-6">
         <button
           onClick={() => setShowProveedorModal(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-slate-800"
         >
           ➕ Crear Proveedor
         </button>
         <button
           onClick={() => setShowCompraModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-slate-800"
         >
           🛒 Registrar Compra
         </button>

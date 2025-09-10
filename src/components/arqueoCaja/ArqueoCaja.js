@@ -1,10 +1,20 @@
 import { useState } from 'react';
 import { ResumenDiario } from "./../../consultas/consultas";
+import { toast } from "react-toastify";
 
-function ArqueoCaja() {
+function ArqueoCaja(onConfirm, onClose) {
   const [resumen, setResumen] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+
+    const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      onConfirm();
+    }
+    if (e.key === "Escape") {
+      onClose();
+    }
+  };
 
   // Fecha para mostrar en el título (formato largo, local)
   const fechaHoy = new Date().toLocaleDateString('es-AR', {
@@ -31,7 +41,7 @@ function ArqueoCaja() {
       setResumen(data);
       setShowModal(true);
     } catch (error) {
-      console.error("Error al obtener el resumen diario:", error);
+      toast.error("Error al obtener el resumen diario:", error);
     } finally {
       setLoading(false);
     }
@@ -58,14 +68,14 @@ function ArqueoCaja() {
   };
 
   return (
-    <div className="p-6 flex flex-col items-center justify-start min-h-screen mt-10">
+    <div className="p-6 flex flex-col items-center justify-start min-h-screen mt-10" onKeyDown={handleKeyDown} tabIndex={0}>
       <h2 className="text-2xl font-bold mb-4 text-center">
         🧾 Arqueo de Caja - {fechaHoy}
       </h2>
       <button
         onClick={handleGenerarArqueo}
         disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-slate-800 disabled:opacity-50"
       >
         {loading ? "Generando..." : "Generar Arqueo"}
       </button>
@@ -85,7 +95,7 @@ function ArqueoCaja() {
 
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={(onConfirm) => setShowModal(false)}
                 className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
               >
                 Cerrar

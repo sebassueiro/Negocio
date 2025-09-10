@@ -7,6 +7,11 @@ import ResumenMensual from './components/resumenMensualCard/ResumenMensualCard';
 import ResumenCigarrillos from './components/resumenCigarrilos/ResumenCigarrillos';
 import Empleado from './components/empleado/Empleado';
 import Proveedores from './components/proveedor/Proveedor';
+import Clientes from './components/clientes/Clientes';
+import  Ticket  from "./components/venta/VentasHoy";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 function App() {
   return (
@@ -22,7 +27,20 @@ function App() {
         <Route path="/ResumenCigarrillos" element={<ResumenCigarrillos />} />
         <Route path="/Empleado" element={<Empleado />} />
         <Route path="/Proveedores" element={<Proveedores />} />
+        <Route path="/Clientes" element={<Clientes />} />
+        <Route path="Ticket" element={<Ticket />} />
       </Routes>
+
+      {/* Contenedor global de Toasts */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        pauseOnHover
+        theme="dark"
+      />
     </Router>
   );  
 }

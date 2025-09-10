@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ResumenCigarrillo } from "./../../consultas/consultas";
+import { toast } from "react-toastify";
 
 function ResumenCigarrillos() {
   const [resumen, setResumen] = useState(null);
@@ -51,7 +52,7 @@ function ResumenCigarrillos() {
       <button
         onClick={handleGenerarTotal}
         disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-slate-800 disabled:opacity-50"
       >
         {loading ? "Generando..." : "Generar Resumen"}
       </button>

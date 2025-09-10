@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ListProducts from "./../listProducts/ListProducts";
 import CreateProduct from "./../createProduct/CreateProduct";  
 import { obtenerProductos, obtenerProductoPorCodigo, actualizarPrecioVenta, crearProducto } from "./../../consultas/consultas";
+import { toast } from "react-toastify";
 
 function ProductsPage() {
   const [productos, setProductos] = useState([]);
@@ -26,11 +27,11 @@ function ProductsPage() {
         setProductos([producto]);
       } else {
         setProductos([]);
-        alert("Producto no encontrado");
+        toast.error("Producto no encontrado");
       }
     } catch (error) {
       setProductos([]);
-      alert("Producto no encontrado");
+      toast.error("Producto no encontrado");
     }
   };
 

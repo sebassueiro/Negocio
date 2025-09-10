@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function CreateProduct({ open, onClose, onSave }) {
   const [codigoBarra, setCodigoBarra] = useState("");
@@ -8,6 +8,19 @@ function CreateProduct({ open, onClose, onSave }) {
   const [esCigarrillo, setEsCigarrillo] = useState(false);
   const [esPrecioVariable, setEsPrecioVariable] = useState(false);
   const [error, setError] = useState("");
+
+  // Manejo del Enter
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, codigoBarra, nombre, precio, descripcion, esCigarrillo, esPrecioVariable]);
 
   if (!open) return null;
 
@@ -27,10 +40,11 @@ function CreateProduct({ open, onClose, onSave }) {
       descripcion,
       precioVenta: Number(precio),
       esCigarrillo,
-      esPrecioVariable, 
+      esPrecioVariable,
     };
 
     onSave(nuevoProducto);
+
     // limpiar y cerrar
     setCodigoBarra("");
     setNombre("");
@@ -39,7 +53,15 @@ function CreateProduct({ open, onClose, onSave }) {
     setEsCigarrillo(false);
     setEsPrecioVariable(false);
     setError("");
+    handleClose();
+  };
+
+  const handleClose = () => {
     onClose();
+    setTimeout(() => {
+      const barcodeInput = document.getElementById("barcode-input");
+      if (barcodeInput) barcodeInput.focus();
+    }, 50);
   };
 
   return (
@@ -72,44 +94,47 @@ function CreateProduct({ open, onClose, onSave }) {
         />
 
         <input
-          type="decimal"
+          type="number"
           className="w-full p-2 border rounded mb-2"
           placeholder="Precio"
           value={precio}
           onChange={(e) => setPrecio(e.target.value)}
         />
 
-        <div className="flex items-center mb-2">
-          <input
-            type="checkbox"
-            id="cigarrillo"
-            checked={esCigarrillo}
-            onChange={(e) => setEsCigarrillo(e.target.checked)}
-            className="mr-2"
-          />
-          <label htmlFor="cigarrillo">¿Es cigarrillo?</label>
-          <input
-            type="checkbox"
-            id="precioVariable"
-            checked={esPrecioVariable}
-            onChange={(e) => setEsPrecioVariable(e.target.checked)}
-            className="mr-2"
-          />
-          <label htmlFor="precioVariable">¿Es precio variable?</label>
+        <div className="flex items-center mb-2 gap-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={esCigarrillo}
+              onChange={(e) => setEsCigarrillo(e.target.checked)}
+              className="mr-2"
+            />
+            ¿Es cigarrillo?
+          </label>
+
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={esPrecioVariable}
+              onChange={(e) => setEsPrecioVariable(e.target.checked)}
+              className="mr-2"
+            />
+            ¿Es precio variable?
+          </label>
         </div>
 
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
         <div className="flex justify-end gap-2">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-slate-600 text-white rounded hover:bg-blslateue-700"
           >
             Crear
           </button>

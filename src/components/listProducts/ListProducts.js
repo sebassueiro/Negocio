@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import UpdateProduct from "../updateProduct/UpdateProduct";
+import { toast } from "react-toastify";
 
 function ListProducts({ productos, buscarProducto, verTodos, handleUpdate,abrirModal }) {
   const [open, setOpen] = useState(false);
@@ -35,6 +36,7 @@ return (
       {/* Barra de búsqueda y acciones */}
       <div className="flex mb-4 gap-2">
         <input
+          id="barcode-input"
           type="text"
           placeholder="Código de barra"
           className="flex-1 p-2 border rounded-l-md focus:outline-none"
@@ -45,18 +47,18 @@ return (
         />
         <button
           onClick={handleBuscar}
-          className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+          className="bg-slate-600 text-white px-4 rounded hover:bg-slate-800"
         >
           Buscar
         </button>
         <button
           onClick={verTodos}
-          className="bg-gray-300 text-gray-800 px-4 rounded hover:bg-gray-400"
+          className="bg-slate-600 text-white px-4 rounded hover:bg-slate-800"
         >
           Ver todos
         </button>
         <button
-          className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+          className="bg-slate-600 text-white px-4 rounded hover:bg-slate-800"
           onClick={abrirModal}
         >
           Crear producto

@@ -26,6 +26,10 @@ export const crearVenta = async (ventaDTO) => {
   const res = await axios.post(`https://localhost:7014/api/Ventas`, ventaDTO);
   return res.data;
 };
+export const obtenerVentas = async () => {
+  const res = await axios.get(`https://localhost:7014/api/Ventas/hoy`);
+  return res.data;
+}
 //#endregion
 
 //#region ResumenDiario
@@ -108,6 +112,35 @@ export const obtenerCompras = async () => {
 
 export const crearCompra = async (compraDTO) => {
   const res = await axios.post('https://localhost:7014/api/Compra/create', compraDTO);
+  return res.data;
+};
+//#endregion
+
+//#region Clientes
+export const obtenerClientes = async () => {
+  const res = await axios.get('https://localhost:7014/api/Clientes');
+  return res.data;
+};
+
+export const crearCliente = async (clienteDTO) => {
+  const res = await axios.post('https://localhost:7014/api/Clientes', clienteDTO);
+  return res.data;
+};
+//#endregion
+
+//#region Pagos Clientes
+export const obtenerPagosCliente = async (idCliente) => {
+  const res = await axios.get(`https://localhost:7014/api/PagosCliente/cliente/${idCliente}`);
+  return res.data;
+};
+
+export const crearPagoCliente = async (pagoDTO) => {
+  const res = await axios.post('https://localhost:7014/api/PagosCliente/pago', pagoDTO);
+  return res.data;
+};
+
+export const crearDeudaCliente = async (pagoDTO) => {
+  const res = await axios.post('https://localhost:7014/api/PagosCliente/deuda', pagoDTO);
   return res.data;
 };
 //#endregion

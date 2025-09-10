@@ -1,23 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { obtenerProductoPorCodigo, crearVenta } from '../../consultas/consultas';
 import ModalPrecioVariable from './../modalPrecioVariable/ModalPrecioVariable';
-
+import { toast } from 'react-toastify';
 
 function MainPage() {
   const [productos, setProductos] = useState([]);
   const [codigo, setCodigo] = useState('');
   const [esFiado, setEsFiado] = useState(false);
-  const [imprimirTicket, setImprimirTicket] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [productoActual, setProductoActual] = useState(null);
   const [precioManual, setPrecioManual] = useState('');
+  const lastEnterRef = useRef(0);
+  const inputCodigoRef = useRef(null);
 
-  const formatoARS = (valor) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
-      minimumFractionDigits: 2
+  useEffect(() => {
+    if (!showModal) {
+      // darle un tick para que el modal se haya desmontado
+      const id = window.setTimeout(() => {
+        inputCodigoRef.current?.focus();
+      }, 50); // 50ms suele ser seguro; podés bajar a 0 si querés
+      return () => clearTimeout(id);
+    }
+  }, [showModal]);
+
+  const formatoARS = (valor) =>
+    new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 2,
     }).format(valor);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      const ahora = Date.now();
+      if (ahora - lastEnterRef.current < 500) {
+        finalizarVenta();
+      } else {
+        agregarProducto();
+      }
+      lastEnterRef.current = ahora;
+    }
   };
 
   const agregarProducto = async () => {
@@ -31,151 +53,161 @@ function MainPage() {
           setCodigo('');
           return;
         }
-        setProductos(prev => {
-          const existe = prev.find(p => (p.codigoBarra ?? p.codigo) === (producto.codigoBarra ?? producto.codigo));
+        setProductos((prev) => {
+          const key = producto.codigoBarra ?? producto.codigo;
+          const existe = prev.find((p) => (p.codigoBarra ?? p.codigo) === key);
           if (existe) {
-            return prev.map(p =>
-              (p.codigoBarra ?? p.codigo) === (producto.codigoBarra ?? producto.codigo)
+            return prev.map((p) =>
+              (p.codigoBarra ?? p.codigo) === key
                 ? { ...p, cantidad: p.cantidad + 1 }
                 : p
             );
-          } else {
-            return [
-              ...prev,
-              {
-                ...producto,
-                cantidad: 1,
-                precioVenta: producto.precioVenta ?? producto.precio_venta ?? producto.precio ?? 0
-              }
-            ];
           }
+          return [
+            ...prev,
+            {
+              ...producto,
+              cantidad: 1,
+              precioVenta:
+                producto.precioVenta ??
+                producto.precio_venta ??
+                producto.precio ??
+                0,
+            },
+          ];
         });
       }
+    } catch {
+      toast.error('Producto no encontrado');
+    } finally {
       setCodigo('');
-    } catch (error) {
-      alert('Producto no encontrado');
-      setCodigo('');
+      inputCodigoRef.current?.focus();
     }
   };
 
   const confirmarPrecioVariable = () => {
     if (!precioManual) return;
-    setProductos(prev => [
+    setProductos((prev) => [
       ...prev,
       {
         ...productoActual,
         cantidad: 1,
-        precioVenta: parseFloat(precioManual)
-      }
+        precioVenta: parseFloat(precioManual),
+      },
     ]);
     setPrecioManual('');
     setProductoActual(null);
     setShowModal(false);
+    setTimeout(() => inputCodigoRef.current?.focus(), 100);
   };
 
   const eliminarProducto = (idx) => {
-    const nuevos = productos.filter((_, i) => i !== idx);
-    setProductos(nuevos);
+    setProductos((prev) => prev.filter((_, i) => i !== idx));
+    setTimeout(() => inputCodigoRef.current?.focus(), 100);
   };
 
-  const finalizarVenta = async () => {
+  const finalizarVenta = async (imprimir = false) => {
     try {
       if (productos.length === 0) {
-        alert("Debe agregar al menos un producto antes de finalizar la venta ⚠️");
+        toast.error("Debe agregar al menos un producto antes de finalizar la venta ⚠️");
         return;
       }
+
       const ventaDTO = {
         idEmpleado: null,
-        idCliente: null, // o el que selecciones
-        esFiado: esFiado,
-        total: productos.reduce((acc, p) => acc + p.precioVenta * p.cantidad, 0),
-        detalle: productos.map((p) => ({
+        idCliente: null,
+        esFiado,
+        total: productos.reduce((sum, p) => sum + p.precioVenta * p.cantidad, 0),
+        detalle: productos.map(p => ({
           codigoBarra: p.codigoBarra ?? p.codigo,
+          nombre: p.nombre,
           cantidad: p.cantidad,
           precioUnitario: p.precioVenta
         }))
       };
 
-      const data = await crearVenta(ventaDTO);
-      console.log("Venta registrada:", data);
+      await crearVenta(ventaDTO);
+      toast.success("Venta registrada con éxito ✅");
 
       setProductos([]);
-      setCodigo("");
+      setCodigo('');
       setEsFiado(false);
-      setImprimirTicket(false);
-      alert("Venta registrada con éxito ✅");
-    } catch (err) {
-      console.error(err);
-      alert("Hubo un error al registrar la venta ❌");
+      setTimeout(() => inputCodigoRef.current?.focus(), 100); // 🔹 vuelve al input
+    } catch {
+      toast.error("Hubo un error al registrar la venta ❌", { autoClose: 3000 });
     }
   };
 
-
-  const total = productos.reduce((acc, p) => acc + (p.precioVenta * p.cantidad), 0);
+  const total = productos.reduce(
+    (sum, p) => sum + p.precioVenta * p.cantidad,
+    0
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <main className="flex-1 flex justify-between items-start p-6">
-        {/* Izquierda: barra de búsqueda y tabla */}
+        {/* IZQUIERDA */}
         <div className="flex-1 max-w-3xl mr-8">
           <div className="flex mb-4 gap-2">
             <input
+              id="barcode-input"
+              ref={inputCodigoRef}
               type="text"
               placeholder="Código de barra"
               className="flex-1 p-2 border rounded-l-md focus:outline-none"
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && agregarProducto()}
+              onKeyDown={handleKeyDown}
               autoFocus
             />
             <button
               onClick={agregarProducto}
-              className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+              className="bg-slate-700 text-white px-4 rounded hover:bg-slate-900"
             >
               Agregar
             </button>
           </div>
+
           <div className="bg-white shadow-lg rounded-lg overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead className="bg-gray-100 text-gray-700">
                 <tr>
-                  <th className="p-3 font-semibold">Código de Barra</th>
+                  <th className="p-3 font-semibold">Código</th>
                   <th className="p-3 font-semibold">Nombre</th>
                   <th className="p-3 font-semibold text-right">Precio</th>
-                  <th className="p-3 font-semibold text-right">Cantidad</th>
+                  <th className="p-3 font-semibold text-right">Cant.</th>
                   <th className="p-3 font-semibold text-right">Subtotal</th>
                 </tr>
               </thead>
               <tbody>
-                {productos.map((prod, idx) => (
+                {productos.map((p, i) => (
                   <tr
-                    key={prod.codigoBarra ?? prod.codigo}
-                    className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                      } hover:bg-green-50 transition`}
+                    key={i}
+                    className={`${i % 2 ? 'bg-gray-50' : 'bg-white'} hover:bg-green-50`}
                   >
-                    <td className="p-3">{prod.codigoBarra ?? prod.codigo}</td>
-                    <td className="p-3">{prod.nombre}</td>
-                    <td className="p-3 text-right">{formatoARS(prod.precioVenta)}</td>
+                    <td className="p-3">{p.codigoBarra ?? p.codigo}</td>
+                    <td className="p-3">{p.nombre}</td>
+                    <td className="p-3 text-right">{formatoARS(p.precioVenta)}</td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => {
-                            if (prod.cantidad > 1) {
-                              const nuevos = [...productos];
-                              nuevos[idx].cantidad -= 1;
-                              setProductos(nuevos);
+                            if (p.cantidad > 1) {
+                              const copy = [...productos];
+                              copy[i].cantidad--;
+                              setProductos(copy);
                             }
                           }}
                           className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
                         >
                           -
                         </button>
-                        <span className="w-6 text-center">{prod.cantidad}</span>
+                        <span className="w-6 text-center">{p.cantidad}</span>
                         <button
                           onClick={() => {
-                            const nuevos = [...productos];
-                            nuevos[idx].cantidad += 1;
-                            setProductos(nuevos);
+                            const copy = [...productos];
+                            copy[i].cantidad++;
+                            setProductos(copy);
                           }}
                           className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
                         >
@@ -184,11 +216,11 @@ function MainPage() {
                       </div>
                     </td>
                     <td className="p-3 text-right">
-                      {formatoARS(prod.precioVenta * prod.cantidad)}
+                      {formatoARS(p.precioVenta * p.cantidad)}
                     </td>
                     <td className="p-3 text-right">
                       <button
-                        onClick={() => eliminarProducto(idx)}
+                        onClick={() => eliminarProducto(i)}
                         className="text-red-600 hover:text-red-800 font-bold"
                       >
                         ✕
@@ -198,7 +230,10 @@ function MainPage() {
                 ))}
                 {productos.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-4 text-center text-gray-400">
+                    <td
+                      colSpan={6}
+                      className="p-4 text-center text-gray-400"
+                    >
                       No hay productos en la caja.
                     </td>
                   </tr>
@@ -208,55 +243,40 @@ function MainPage() {
           </div>
         </div>
 
-        {/* Derecha: total, checkpoints y botón */}
-        <div className="w-80 bg-white p-4 shadow-md flex flex-col justify-between h-[750px] w-[500px]">
+        {/* DERECHA */}
+        <div className="w-[500px] bg-white p-4 shadow-md flex flex-col justify-between h-[750px]">
           <div className="flex flex-col items-center">
-            <h2 className="text-6xl mb-6 text-black-700">
-              Total: {formatoARS(total)}
-            </h2>
+            <h2 className="text-6xl mb-6">{formatoARS(total)}</h2>
           </div>
-
           <div className="mt-auto">
-            <div className="flex flex-col gap-3 mb-6">
-              <label className="flex items-center space-x-2 text-base">
-                <input
-                  type="checkbox"
-                  checked={esFiado}
-                  onChange={() => setEsFiado(!esFiado)}
-                  className="accent-blue-600 w-5 h-5"
-                />
-                <span>¿Es fiado?</span>
-              </label>
-              <label className="flex items-center space-x-2 text-base">
-                <input
-                  type="checkbox"
-                  checked={imprimirTicket}
-                  onChange={() => setImprimirTicket(!imprimirTicket)}
-                  className="accent-blue-600 w-5 h-5"
-                />
-                <span>Imprimir ticket</span>
-              </label>
-            </div>
-
             <button
-              onClick={finalizarVenta}
-              className="bg-blue-600 text-white px-6 py-4 rounded-lg text-xl font-semibold hover:bg-blue-700 transition w-full"
+              onClick={() => finalizarVenta(false)}
+              className="bg-slate-600 text-white px-6 py-4 rounded-lg text-xl font-semibold hover:bg-slate-800 transition w-full"
             >
               Finalizar venta
             </button>
           </div>
         </div>
-
       </main>
+
+      {/* Modal precio variable */}
       {showModal && (
         <ModalPrecioVariable
           producto={productoActual}
           precio={precioManual}
           setPrecio={setPrecioManual}
-          onConfirm={confirmarPrecioVariable}
-          onClose={() => setShowModal(false)}
+          onConfirm={() => {
+            confirmarPrecioVariable(); // esto cierra el modal internamente
+            // no hace falta focus aquí porque el useEffect lo hará al cambiar showModal
+          }}
+          onClose={() => {
+            setShowModal(false);
+            // tampoco hace falta llamar focus aquí si usás el useEffect
+          }}
         />
       )}
+
+
     </div>
   );
 }
