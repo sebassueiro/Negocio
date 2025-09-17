@@ -119,7 +119,7 @@ function CreateProduct({ open, onClose, onSave }) {
               onChange={(e) => setEsPrecioVariable(e.target.checked)}
               className="mr-2"
             />
-            ¿Es precio variable?
+            ¿Es precio por kilo?
           </label>
         </div>
 

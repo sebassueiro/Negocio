@@ -9,16 +9,15 @@ function MainPage() {
   const [esFiado, setEsFiado] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [productoActual, setProductoActual] = useState(null);
-  const [precioManual, setPrecioManual] = useState('');
   const lastEnterRef = useRef(0);
   const inputCodigoRef = useRef(null);
+  const [pesoManual, setPesoManual] = useState("");
 
   useEffect(() => {
     if (!showModal) {
-      // darle un tick para que el modal se haya desmontado
       const id = window.setTimeout(() => {
         inputCodigoRef.current?.focus();
-      }, 50); // 50ms suele ser seguro; podés bajar a 0 si querés
+      }, 50);
       return () => clearTimeout(id);
     }
   }, [showModal]);
@@ -49,6 +48,7 @@ function MainPage() {
       if (producto) {
         if (producto.esPrecioVariable) {
           setProductoActual(producto);
+          setPesoManual("");
           setShowModal(true);
           setCodigo('');
           return;
@@ -73,6 +73,8 @@ function MainPage() {
                 producto.precio_venta ??
                 producto.precio ??
                 0,
+              peso: null,
+              subtotal: producto.precioVenta ?? producto.precio_venta ?? producto.precio ?? 0,
             },
           ];
         });
@@ -85,20 +87,33 @@ function MainPage() {
     }
   };
 
-  const confirmarPrecioVariable = () => {
-    if (!precioManual) return;
+  const confirmarPrecioVariable = (precioFinal) => {
+    if (!pesoManual || isNaN(pesoManual) || Number(pesoManual) <= 0) {
+      toast.error("Debe ingresar un peso válido ⚖️");
+      return;
+    }
+    if (!productoActual) {
+      toast.error("No hay producto seleccionado");
+      return;
+    }
+
+    const subtotal = Number(precioFinal); // ya redondeado por el modal
+
     setProductos((prev) => [
       ...prev,
       {
         ...productoActual,
         cantidad: 1,
-        precioVenta: parseFloat(precioManual),
+        precioVenta: subtotal, // subtotal guardado para el ticket y la venta
+        peso: Number(pesoManual),
+        subtotal,
       },
     ]);
-    setPrecioManual('');
+
+    setPesoManual("");
     setProductoActual(null);
     setShowModal(false);
-    setTimeout(() => inputCodigoRef.current?.focus(), 100);
+    inputCodigoRef.current?.focus();
   };
 
   const eliminarProducto = (idx) => {
@@ -113,16 +128,19 @@ function MainPage() {
         return;
       }
 
+      const totalCalc = productos.reduce((sum, p) => sum + (Number(p.subtotal ?? p.precioVenta) * Number(p.cantidad)), 0);
+
       const ventaDTO = {
         idEmpleado: null,
         idCliente: null,
         esFiado,
-        total: productos.reduce((sum, p) => sum + p.precioVenta * p.cantidad, 0),
+        total: totalCalc,
         detalle: productos.map(p => ({
           codigoBarra: p.codigoBarra ?? p.codigo,
           nombre: p.nombre,
           cantidad: p.cantidad,
-          precioUnitario: p.precioVenta
+          precioUnitario: Number(p.subtotal ?? p.precioVenta ?? 0),
+          peso: p.peso ?? null
         }))
       };
 
@@ -132,14 +150,16 @@ function MainPage() {
       setProductos([]);
       setCodigo('');
       setEsFiado(false);
-      setTimeout(() => inputCodigoRef.current?.focus(), 100); // 🔹 vuelve al input
+      setPesoManual("");
+      setProductoActual(null);
+      setTimeout(() => inputCodigoRef.current?.focus(), 100);
     } catch {
       toast.error("Hubo un error al registrar la venta ❌", { autoClose: 3000 });
     }
   };
 
   const total = productos.reduce(
-    (sum, p) => sum + p.precioVenta * p.cantidad,
+    (sum, p) => sum + (Number(p.subtotal ?? p.precioVenta) * Number(p.cantidad)),
     0
   );
 
@@ -177,6 +197,7 @@ function MainPage() {
                   <th className="p-3 font-semibold text-right">Precio</th>
                   <th className="p-3 font-semibold text-right">Cant.</th>
                   <th className="p-3 font-semibold text-right">Subtotal</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -216,7 +237,7 @@ function MainPage() {
                       </div>
                     </td>
                     <td className="p-3 text-right">
-                      {formatoARS(p.precioVenta * p.cantidad)}
+                      {formatoARS((p.subtotal ?? p.precioVenta) * p.cantidad)}
                     </td>
                     <td className="p-3 text-right">
                       <button
@@ -263,20 +284,16 @@ function MainPage() {
       {showModal && (
         <ModalPrecioVariable
           producto={productoActual}
-          precio={precioManual}
-          setPrecio={setPrecioManual}
-          onConfirm={() => {
-            confirmarPrecioVariable(); // esto cierra el modal internamente
-            // no hace falta focus aquí porque el useEffect lo hará al cambiar showModal
-          }}
+          peso={pesoManual}
+          setPeso={setPesoManual}
+          onConfirm={(precioFinal) => confirmarPrecioVariable(precioFinal)}
           onClose={() => {
             setShowModal(false);
-            // tampoco hace falta llamar focus aquí si usás el useEffect
+            setPesoManual("");
+            setProductoActual(null);
           }}
         />
       )}
-
-
     </div>
   );
 }

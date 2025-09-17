@@ -1,30 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ResumenDiario } from "./../../consultas/consultas";
 import { toast } from "react-toastify";
 
-function ArqueoCaja(onConfirm, onClose) {
-  const [resumen, setResumen] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-    const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      onConfirm();
-    }
-    if (e.key === "Escape") {
-      onClose();
-    }
-  };
-
-  // Fecha para mostrar en el título (formato largo, local)
-  const fechaHoy = new Date().toLocaleDateString('es-AR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+function ArqueoCaja() {
+  const [resumen, setResumen] = useState({
+    fecha: null,
+    ingresos: 0,
+    egresos: 0,
+    gananciaNeta: 0
   });
+  const [loading, setLoading] = useState(true);
 
-  // Función para obtener fecha local en formato YYYY-MM-DD
   const obtenerFechaLocal = () => {
     const hoy = new Date();
     const yyyy = hoy.getFullYear();
@@ -33,31 +19,54 @@ function ArqueoCaja(onConfirm, onClose) {
     return `${yyyy}-${mm}-${dd}`;
   };
 
-  const handleGenerarArqueo = async () => {
-    setLoading(true);
-    try {
-      const fechaFormateada = obtenerFechaLocal();
-      const data = await ResumenDiario(fechaFormateada);
-      setResumen(data);
-      setShowModal(true);
-    } catch (error) {
-      toast.error("Error al obtener el resumen diario:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    let mounted = true;
+    const fetchResumen = async () => {
+      setLoading(true);
+      try {
+        const fechaFormateada = obtenerFechaLocal();
+        const data = await ResumenDiario(fechaFormateada);
+        if (!mounted) return;
 
-  const formatoARS = (valor) => {
-    return new Intl.NumberFormat('es-AR', {
+        const ingresos = Number(data?.ingresos ?? 0);
+        const egresos = Number(data?.egresos ?? 0);
+        const gananciaNeta = Number(data?.gananciaNeta ?? (ingresos - egresos));
+        setResumen({
+          fecha: data?.fecha ?? `${fechaFormateada}T00:00:00`,
+          ingresos,
+          egresos,
+          gananciaNeta
+        });
+      } catch (err) {
+        console.error("Error al obtener el resumen diario:", err);
+        toast.error("Error al cargar el arqueo");
+        setResumen({
+          fecha: obtenerFechaLocal(),
+          ingresos: 0,
+          egresos: 0,
+          gananciaNeta: 0
+        });
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    fetchResumen();
+    return () => { mounted = false; };
+  }, []);
+
+  const formatoARS = (valor) =>
+    new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: 'ARS',
-      minimumFractionDigits: 2
-    }).format(valor);
-  };
+      minimumFractionDigits: 2,
+    }).format(Number(valor ?? 0));
 
-  // Formatear la fecha del resumen sin desfase horario
   const formatearFechaResumen = (fechaISO) => {
-    const [anio, mes, dia] = fechaISO.split("T")[0].split("-");
+    if (!fechaISO) return new Date().toLocaleDateString('es-AR');
+    const parte = String(fechaISO).split("T")[0];
+    const [anio, mes, dia] = parte.split("-");
+    if (!anio || !mes || !dia) return new Date().toLocaleDateString('es-AR');
     const fecha = new Date(`${anio}-${mes}-${dia}T12:00:00`);
     return fecha.toLocaleDateString("es-AR", {
       weekday: "long",
@@ -68,38 +77,37 @@ function ArqueoCaja(onConfirm, onClose) {
   };
 
   return (
-    <div className="p-6 flex flex-col items-center justify-start min-h-screen mt-10" onKeyDown={handleKeyDown} tabIndex={0}>
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        🧾 Arqueo de Caja - {fechaHoy}
-      </h2>
-      <button
-        onClick={handleGenerarArqueo}
-        disabled={loading}
-        className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-slate-800 disabled:opacity-50"
-      >
-        {loading ? "Generando..." : "Generar Arqueo"}
-      </button>
+    <div className="p-6 mt-10 w-full flex flex-col items-center">
+      <h2 className="text-2xl font-bold mb-6 text-center">🧾 Arqueo de Caja</h2>
 
-      {showModal && resumen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl shadow-2xl w-[400px] text-center pointer-events-auto">
-            <h2 className="text-lg font-bold mb-4">
-               {formatearFechaResumen(resumen.fecha)}
-            </h2>
+      {loading ? (
+        <p className="text-gray-500">Cargando arqueo...</p>
+      ) : (
+        <div className="w-full max-w-4xl shadow-md rounded-xl border bg-white p-4">
+          <div className="mb-4 text-center text-sm text-gray-600">
+            {formatearFechaResumen(resumen.fecha)}
+          </div>
 
-            <div className="text-left mb-4">
-              <p><strong>Ingresos:</strong> {formatoARS(resumen.ingresos)}</p>
-              <p><strong>Egresos:</strong> {formatoARS(resumen.egresos)}</p>
-              <p><strong>Ganancia Neta:</strong> {formatoARS(resumen.gananciaNeta)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-500">Ingresos</div>
+              <div className="text-2xl font-semibold text-green-600 mt-2">
+                {formatoARS(resumen.ingresos)}
+              </div>
             </div>
 
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={(onConfirm) => setShowModal(false)}
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Cerrar
-              </button>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-500">Egresos</div>
+              <div className="text-2xl font-semibold text-red-600 mt-2">
+                {formatoARS(resumen.egresos)}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-500">Ganancia Neta</div>
+              <div className={`text-2xl font-semibold mt-2 ${resumen.gananciaNeta >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatoARS(resumen.gananciaNeta)}
+              </div>
             </div>
           </div>
         </div>

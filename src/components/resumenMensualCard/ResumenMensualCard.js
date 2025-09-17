@@ -38,7 +38,7 @@ function ResumenMensualTabla() {
 
   return (
     <div className="p-6 mt-10 w-full flex flex-col items-center">
-      <h2 className="text-4xl font-bold mb-6 text-center">📊 Resúmenes Mensuales</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">📊 Resúmenes Mensuales</h2>
 
       {loading ? (
         <p className="text-gray-500">Cargando resúmenes...</p>
