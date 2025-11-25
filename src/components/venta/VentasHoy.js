@@ -49,12 +49,12 @@ const printTicket = (venta) => {
             margin: 1mm auto;
             padding: 0;
             font-family: monospace;
-            line-height: 1.2;
-            font-size: 12px;
+            line-height: 1.4;
+            font-size: 14px; /* 🔹 Fuente más grande */
           }
           .divider {
             border-top: 1px dashed #000;
-            margin: 4px 0;
+            margin: 6px 0;
           }
           .center {
             text-align: center;
@@ -70,17 +70,17 @@ const printTicket = (venta) => {
             word-break: break-word;
           }
           .cnt {
-            flex: 0 0 10mm;
+            flex: 0 0 15mm; /* 🔹 Más ancho para cantidad */
             text-align: right;
-            margin: 0 1mm;
+            margin: 0 2mm;
           }
           .importe {
-            flex: 0 0 18mm;
+            flex: 0 0 25mm; /* 🔹 Más ancho para precios grandes */
             text-align: right;
           }
           .total {
             font-weight: bold;
-            margin-top: 4px;
+            margin-top: 6px;
           }
         </style>
       </head>
@@ -115,6 +115,7 @@ const printTicket = (venta) => {
   win.print();
   win.close();
 };
+
 
 
   return (

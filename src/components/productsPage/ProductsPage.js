@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ListProducts from "./../listProducts/ListProducts";
 import CreateProduct from "./../createProduct/CreateProduct";  
-import { obtenerProductos, obtenerProductoPorCodigo, actualizarPrecioVenta, crearProducto } from "./../../consultas/consultas";
+import { obtenerProductos, obtenerProductoPorCodigo, actualizarProducto, crearProducto } from "./../../consultas/consultas";
 import { toast } from "react-toastify";
 
 function ProductsPage() {
@@ -39,10 +39,11 @@ function ProductsPage() {
     setProductos(todos);
   };
 
-  const handleUpdate = async (codigoBarra, nuevoPrecio) => {
-    await actualizarPrecioVenta(codigoBarra, nuevoPrecio);
-    recargarProductos();
-  };
+const handleUpdate = async (codigoBarra, productoData) => {
+  await actualizarProducto(codigoBarra, productoData);
+  recargarProductos();
+};
+
 
   const handleCreate = async (nuevoProducto) => {
     await crearProducto(nuevoProducto);

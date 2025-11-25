@@ -15,7 +15,7 @@ function ResumenMensualTabla() {
   };
 
   const nombreMes = (mes) => {
-    return new Date(2025, mes - 1).toLocaleString("es-AR", { month: "long" });
+    return new Date(new Date().getFullYear(), mes - 1).toLocaleString("es-AR", { month: "long" });
   };
 
   useEffect(() => {
@@ -36,47 +36,52 @@ function ResumenMensualTabla() {
     cargarResumenes();
   }, []);
 
-  return (
-    <div className="p-6 mt-10 w-full flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-6 text-center">📊 Resúmenes Mensuales</h2>
+return (
+    <div className="mt-3 w-full flex flex-col items-center">
+      <h2 className="text-2xl font-bold mb-2 text-center">📊 Resúmenes Mensuales</h2>
 
       {loading ? (
         <p className="text-gray-500">Cargando resúmenes...</p>
       ) : (
-        <div className="overflow-x-auto w-full max-w-6xl shadow-md rounded-xl border">
-          <table className="w-full border-collapse bg-white rounded-xl">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="p-3 text-left">Mes</th>
-                <th className="p-3 text-right">Ingresos</th>
-                <th className="p-3 text-right">Egresos Sueldos</th>
-                <th className="p-3 text-right">Egresos Compras</th>
-                <th className="p-3 text-right">Egresos Totales</th>
-                <th className="p-3 text-right">Ganancia Neta</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resumenes.map((resumen, index) => (
-                <tr
-                  key={`${resumen.anio}-${resumen.mes}`}
-                  className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                >
-                  <td className="p-3 font-semibold">{nombreMes(resumen.mes)} {resumen.anio}</td>
-                  <td className="p-3 text-right text-green-600">{formatoARS(resumen.ingresos)}</td>
-                  <td className="p-3 text-right text-red-600">{formatoARS(resumen.egresosSueldos)}</td>
-                  <td className="p-3 text-right text-red-600">{formatoARS(resumen.egresosCompras)}</td>
-                  <td className="p-3 text-right">{formatoARS(resumen.egresos)}</td>
-                  <td
-                    className={`p-3 text-right font-bold ${
-                      resumen.gananciaNeta >= 0 ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {formatoARS(resumen.gananciaNeta)}
-                  </td>
+        // contenedor con borde exterior más grueso
+        <div className="w-full max-w-6xl shadow-md rounded-xl border-2 border-gray-300 overflow-hidden">
+          {/* contenedor con scroll interno y altura máxima calculada */}
+          <div className="overflow-auto max-h-[calc(100vh-150px)]">
+            {/* Tabla con borde exterior y líneas horizontales internas más visibles */}
+            <table className="w-full min-w-[800px] border-collapse bg-white text-sm">
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  <th className="p-2 text-left border-b-2 border-gray-300">Mes</th>
+                  <th className="p-2 text-right border-b-2 border-gray-300">Ingresos</th>
+                  <th className="p-2 text-right border-b-2 border-gray-300">Egresos Sueldos</th>
+                  <th className="p-2 text-right border-b-2 border-gray-300">Egresos Compras</th>
+                  <th className="p-2 text-right border-b-2 border-gray-300">Egresos Totales</th>
+                  <th className="p-2 text-right border-b-2 border-gray-300">Ganancia Neta</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {resumenes.map((resumen, index) => (
+                  <tr
+                    key={`${resumen.anio}-${resumen.mes}`}
+                    className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                  >
+                    <td className="p-2 font-semibold border-b border-gray-200">{nombreMes(resumen.mes)} {resumen.anio}</td>
+                    <td className="p-2 text-right text-green-600 border-b border-gray-200">{formatoARS(resumen.ingresos)}</td>
+                    <td className="p-2 text-right text-red-600 border-b border-gray-200">{formatoARS(resumen.egresosSueldos)}</td>
+                    <td className="p-2 text-right text-red-600 border-b border-gray-200">{formatoARS(resumen.egresosCompras)}</td>
+                    <td className="p-2 text-right border-b border-gray-200">{formatoARS(resumen.egresos)}</td>
+                    <td
+                      className={`p-2 text-right font-bold border-b border-gray-200 ${
+                        resumen.gananciaNeta >= 0 ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {formatoARS(resumen.gananciaNeta)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

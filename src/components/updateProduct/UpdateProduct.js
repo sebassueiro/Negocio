@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 
 function UpdateProduct({ open, onClose, producto, onSave }) {
+  const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (producto) {
+      setNombre(producto.nombre ?? "");
       setPrecio(producto.precioVenta ?? producto.precio ?? "");
       setError("");
     }
@@ -22,7 +24,7 @@ function UpdateProduct({ open, onClose, producto, onSave }) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, precio]);
+  }, [open, precio, nombre]);
 
   if (!open || !producto) return null;
 
@@ -31,7 +33,15 @@ function UpdateProduct({ open, onClose, producto, onSave }) {
       setError("El precio debe ser un número mayor a 0");
       return;
     }
-    onSave(producto.codigoBarra ?? producto.codigo, Number(precio));
+    if (!nombre.trim()) {
+      setError("El nombre no puede estar vacío");
+      return;
+    }
+
+    onSave(producto.codigoBarra ?? producto.codigo, {
+      nombre,
+      precioVenta: Number(precio),
+    });
     handleClose();
   };
 
@@ -48,26 +58,35 @@ function UpdateProduct({ open, onClose, producto, onSave }) {
       <div className="bg-white p-6 rounded-lg shadow-xl w-96 border border-gray-200">
         <h2 className="text-xl font-bold mb-4">Actualizar producto</h2>
 
-        <div className="mb-2">
+        <div className="mb-4">
           <div>
             <span className="font-semibold">Código de barra:</span>{" "}
             {producto.codigoBarra ?? producto.codigo}
           </div>
-          <div>
-            <span className="font-semibold">Nombre:</span> {producto.nombre}
-          </div>
         </div>
 
-        <input
-          type="number"
-          className="w-full p-2 border rounded mb-2"
-          placeholder="Nuevo precio"
-          value={precio}
-          onChange={(e) => setPrecio(e.target.value)}
-          autoFocus
-        />
+        <div className="flex items-center mb-3">
+          <label className="w-24 font-semibold">Nombre:</label>
+          <input
+            type="text"
+            className="flex-1 p-2 border rounded"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+          />
+        </div>
 
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        <div className="flex items-center mb-3">
+          <label className="w-24 font-semibold">Precio:</label>
+          <input
+            type="number"
+            className="flex-1 p-2 border rounded"
+            placeholder="Nuevo precio"
+            value={precio}
+            onChange={(e) => setPrecio(e.target.value)}
+          />
+        </div>
+
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
         <div className="flex justify-end gap-2">
           <button

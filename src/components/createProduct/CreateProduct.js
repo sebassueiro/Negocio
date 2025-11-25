@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 function CreateProduct({ open, onClose, onSave }) {
   const [codigoBarra, setCodigoBarra] = useState("");
   const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
   const [esCigarrillo, setEsCigarrillo] = useState(false);
   const [esPrecioVariable, setEsPrecioVariable] = useState(false);
@@ -20,7 +19,7 @@ function CreateProduct({ open, onClose, onSave }) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, codigoBarra, nombre, precio, descripcion, esCigarrillo, esPrecioVariable]);
+  }, [open, codigoBarra, nombre, precio, esCigarrillo, esPrecioVariable]);
 
   if (!open) return null;
 
@@ -37,7 +36,7 @@ function CreateProduct({ open, onClose, onSave }) {
     const nuevoProducto = {
       codigoBarra,
       nombre,
-      descripcion,
+      descripcion: nombre, // 🔹 se copia el nombre a la descripción
       precioVenta: Number(precio),
       esCigarrillo,
       esPrecioVariable,
@@ -48,7 +47,6 @@ function CreateProduct({ open, onClose, onSave }) {
     // limpiar y cerrar
     setCodigoBarra("");
     setNombre("");
-    setDescripcion("");
     setPrecio("");
     setEsCigarrillo(false);
     setEsPrecioVariable(false);
@@ -84,13 +82,6 @@ function CreateProduct({ open, onClose, onSave }) {
           placeholder="Nombre"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-        />
-
-        <textarea
-          className="w-full p-2 border rounded mb-2"
-          placeholder="Descripción"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
         />
 
         <input
@@ -134,7 +125,7 @@ function CreateProduct({ open, onClose, onSave }) {
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-slate-600 text-white rounded hover:bg-blslateue-700"
+            className="px-4 py-2 bg-slate-600 text-white rounded hover:bg-slate-700"
           >
             Crear
           </button>

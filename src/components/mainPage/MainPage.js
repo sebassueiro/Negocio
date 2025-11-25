@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { obtenerProductoPorCodigo, crearVenta } from '../../consultas/consultas';
 import ModalPrecioVariable from './../modalPrecioVariable/ModalPrecioVariable';
 import { toast } from 'react-toastify';
@@ -9,35 +9,28 @@ function MainPage() {
   const [esFiado, setEsFiado] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [productoActual, setProductoActual] = useState(null);
+  const [precioManual, setPrecioManual] = useState('');
   const lastEnterRef = useRef(0);
   const inputCodigoRef = useRef(null);
-  const [pesoManual, setPesoManual] = useState("");
-
-  useEffect(() => {
-    if (!showModal) {
-      const id = window.setTimeout(() => {
-        inputCodigoRef.current?.focus();
-      }, 50);
-      return () => clearTimeout(id);
-    }
-  }, [showModal]);
 
   const formatoARS = (valor) =>
-    new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
+    new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
       minimumFractionDigits: 2,
     }).format(valor);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      const ahora = Date.now();
-      if (ahora - lastEnterRef.current < 500) {
-        finalizarVenta();
-      } else {
+      if (codigo.trim() !== "") {
         agregarProducto();
+      } else {
+        const ahora = Date.now();
+        if (ahora - lastEnterRef.current < 500) {
+          finalizarVenta(); // Doble Enter → finalizar
+        }
+        lastEnterRef.current = ahora;
       }
-      lastEnterRef.current = ahora;
     }
   };
 
@@ -48,16 +41,16 @@ function MainPage() {
       if (producto) {
         if (producto.esPrecioVariable) {
           setProductoActual(producto);
-          setPesoManual("");
           setShowModal(true);
           setCodigo('');
           return;
         }
-        setProductos((prev) => {
+
+        setProductos(prev => {
           const key = producto.codigoBarra ?? producto.codigo;
-          const existe = prev.find((p) => (p.codigoBarra ?? p.codigo) === key);
+          const existe = prev.find(p => (p.codigoBarra ?? p.codigo) === key);
           if (existe) {
-            return prev.map((p) =>
+            return prev.map(p =>
               (p.codigoBarra ?? p.codigo) === key
                 ? { ...p, cantidad: p.cantidad + 1 }
                 : p
@@ -73,8 +66,6 @@ function MainPage() {
                 producto.precio_venta ??
                 producto.precio ??
                 0,
-              peso: null,
-              subtotal: producto.precioVenta ?? producto.precio_venta ?? producto.precio ?? 0,
             },
           ];
         });
@@ -87,81 +78,60 @@ function MainPage() {
     }
   };
 
-  const confirmarPrecioVariable = (precioFinal) => {
-    if (!pesoManual || isNaN(pesoManual) || Number(pesoManual) <= 0) {
-      toast.error("Debe ingresar un peso válido ⚖️");
-      return;
-    }
-    if (!productoActual) {
-      toast.error("No hay producto seleccionado");
-      return;
-    }
-
-    const subtotal = Number(precioFinal); // ya redondeado por el modal
-
-    setProductos((prev) => [
+  const confirmarPrecioVariable = () => {
+    if (!precioManual) return;
+    setProductos(prev => [
       ...prev,
       {
         ...productoActual,
         cantidad: 1,
-        precioVenta: subtotal, // subtotal guardado para el ticket y la venta
-        peso: Number(pesoManual),
-        subtotal,
+        precioVenta: parseFloat(precioManual),
       },
     ]);
-
-    setPesoManual("");
+    setPrecioManual('');
     setProductoActual(null);
     setShowModal(false);
-    inputCodigoRef.current?.focus();
+    // focus volverá al input de código desde el callback onConfirm que pasamos al modal
   };
 
   const eliminarProducto = (idx) => {
-    setProductos((prev) => prev.filter((_, i) => i !== idx));
-    setTimeout(() => inputCodigoRef.current?.focus(), 100);
+    setProductos(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const finalizarVenta = async (imprimir = false) => {
+  const finalizarVenta = async () => {
     try {
       if (productos.length === 0) {
         toast.error("Debe agregar al menos un producto antes de finalizar la venta ⚠️");
         return;
       }
 
-      const totalCalc = productos.reduce((sum, p) => sum + (Number(p.subtotal ?? p.precioVenta) * Number(p.cantidad)), 0);
-
       const ventaDTO = {
         idEmpleado: null,
         idCliente: null,
         esFiado,
-        total: totalCalc,
+        total: productos.reduce((sum, p) => sum + p.precioVenta * p.cantidad, 0),
         detalle: productos.map(p => ({
           codigoBarra: p.codigoBarra ?? p.codigo,
           nombre: p.nombre,
           cantidad: p.cantidad,
-          precioUnitario: Number(p.subtotal ?? p.precioVenta ?? 0),
-          peso: p.peso ?? null
-        }))
+          precioUnitario: p.precioVenta,
+        })),
       };
 
       await crearVenta(ventaDTO);
       toast.success("Venta registrada con éxito ✅");
 
+      // Reset
       setProductos([]);
       setCodigo('');
       setEsFiado(false);
-      setPesoManual("");
-      setProductoActual(null);
-      setTimeout(() => inputCodigoRef.current?.focus(), 100);
-    } catch {
+      inputCodigoRef.current?.focus();
+    } catch (error) {
       toast.error("Hubo un error al registrar la venta ❌", { autoClose: 3000 });
     }
   };
 
-  const total = productos.reduce(
-    (sum, p) => sum + (Number(p.subtotal ?? p.precioVenta) * Number(p.cantidad)),
-    0
-  );
+  const total = productos.reduce((sum, p) => sum + p.precioVenta * p.cantidad, 0);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -171,12 +141,12 @@ function MainPage() {
           <div className="flex mb-4 gap-2">
             <input
               id="barcode-input"
-              ref={inputCodigoRef}
+              ref={inputCodigoRef}                // <- ref agregado
               type="text"
               placeholder="Código de barra"
               className="flex-1 p-2 border rounded-l-md focus:outline-none"
               value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
+              onChange={e => setCodigo(e.target.value)}
               onKeyDown={handleKeyDown}
               autoFocus
             />
@@ -197,7 +167,7 @@ function MainPage() {
                   <th className="p-3 font-semibold text-right">Precio</th>
                   <th className="p-3 font-semibold text-right">Cant.</th>
                   <th className="p-3 font-semibold text-right">Subtotal</th>
-                  <th />
+                  <th className="p-3 font-semibold text-right"></th>
                 </tr>
               </thead>
               <tbody>
@@ -237,7 +207,7 @@ function MainPage() {
                       </div>
                     </td>
                     <td className="p-3 text-right">
-                      {formatoARS((p.subtotal ?? p.precioVenta) * p.cantidad)}
+                      {formatoARS(p.precioVenta * p.cantidad)}
                     </td>
                     <td className="p-3 text-right">
                       <button
@@ -251,10 +221,7 @@ function MainPage() {
                 ))}
                 {productos.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="p-4 text-center text-gray-400"
-                    >
+                    <td colSpan={6} className="p-4 text-center text-gray-400">
                       No hay productos en la caja.
                     </td>
                   </tr>
@@ -265,13 +232,13 @@ function MainPage() {
         </div>
 
         {/* DERECHA */}
-        <div className="w-[500px] bg-white p-4 shadow-md flex flex-col justify-between h-[750px]">
+        <div className="w-[500px] bg-white p-4 shadow-md flex flex-col justify-between h-[500px]">
           <div className="flex flex-col items-center">
             <h2 className="text-6xl mb-6">{formatoARS(total)}</h2>
           </div>
           <div className="mt-auto">
             <button
-              onClick={() => finalizarVenta(false)}
+              onClick={() => finalizarVenta()}
               className="bg-slate-600 text-white px-6 py-4 rounded-lg text-xl font-semibold hover:bg-slate-800 transition w-full"
             >
               Finalizar venta
@@ -284,13 +251,16 @@ function MainPage() {
       {showModal && (
         <ModalPrecioVariable
           producto={productoActual}
-          peso={pesoManual}
-          setPeso={setPesoManual}
-          onConfirm={(precioFinal) => confirmarPrecioVariable(precioFinal)}
+          precio={precioManual}
+          setPrecio={setPrecioManual}
+          onConfirm={() => {
+            confirmarPrecioVariable();
+            // dar un pequeño delay para asegurar que el modal se haya desmontado
+            setTimeout(() => inputCodigoRef.current?.focus(), 50);
+          }}
           onClose={() => {
             setShowModal(false);
-            setPesoManual("");
-            setProductoActual(null);
+            setTimeout(() => inputCodigoRef.current?.focus(), 50);
           }}
         />
       )}
